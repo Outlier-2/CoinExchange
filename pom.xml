@@ -16,7 +16,7 @@
     <module>coin-finance</module>
     <module>coin-task</module>
     <module>coin-chan</module>
-    <module>coiin-statistics</module>
+    <module>coin-statistics</module>
     <module>match-engine</module>
     <module>exchange-engine</module>
   </modules>
