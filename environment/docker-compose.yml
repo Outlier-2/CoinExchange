@@ -48,9 +48,9 @@ services:
             - "10911:10911"
             - "10909:10909"
         volumes:
-            - ./config/broker.conf:/opt/rocketmq-4.4.0/conf/broker.conf
+            - /usr/local/rocketmq/broker.conf:/opt/rocketmq-4.4.0/conf/broker.conf
         environment:
-            NAMESRV_ADDR: namesrv:9876
+            NAMESRV_ADDR: 127.0.0.1:9876
             MAX_POSSIBLE_HEAP: 200000000
         depends_on:
             - namesrv
