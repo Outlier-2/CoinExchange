@@ -7,7 +7,6 @@
     <groupId>cn.l13z</groupId>
     <artifactId>coin-exchange</artifactId>
     <version>1.0</version>
-    <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>coin-admin</artifactId>
