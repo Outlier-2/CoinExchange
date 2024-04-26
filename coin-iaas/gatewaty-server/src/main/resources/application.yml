@@ -51,4 +51,7 @@ spring:
                     serverAddr: 127.0.0.1:8848
                     dataId: api-group
                     ruleType: gw_api_group
-#
+    redis:
+        host: 106.52.67.250
+        port: 6380
+        password: 123456*
