@@ -2,6 +2,7 @@ package cn.l13z.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -9,7 +10,11 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.security.oauth2.provider.token.store.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
+import org.springframework.security.rsa.crypto.KeyStoreKeyFactory;
 
 /**
  * ClassName: AuthorizationConfig.java <br>
@@ -26,20 +31,24 @@ public class AuthorizationConfig extends AuthorizationServerConfigurerAdapter {
 
     // 依赖注入密码编码器
     @Autowired
-    public PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     // 依赖注入认证管理器
     @Autowired
-    public AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
 
     // 依赖注入用户详情服务
     @Autowired
-    public UserDetailsService userDetailsService;
+    private UserDetailsService userDetailsService;
+
+//    @Autowired
+//    private RedisConnectionFactory redisConnectionFactory;
 
     /**
+     * 配置客户端信息，包括客户端ID、客户端密码、客户端访问范围、授权类型、访问令牌有效期、刷新令牌有效期等。
      *
-     * @param clients
-     * @throws Exception
+     * @param clients clients
+     * @throws Exception 配置客户端信息异常
      */
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
@@ -61,13 +70,39 @@ public class AuthorizationConfig extends AuthorizationServerConfigurerAdapter {
 
     /**
      * 配置授权服务器端点，包括令牌存储、认证管理器、用户详情服务等。
-     * @param endpoints
-     * @throws Exception
+     *
+     * @param endpoints endpoints
+     * @throws Exception 配置授权服务器端点异常
      */
     @Override
     public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
         endpoints.tokenStore(new InMemoryTokenStore())
             .authenticationManager(authenticationManager)
-            .userDetailsService(userDetailsService);
+            .userDetailsService(userDetailsService)
+            //存储JWT令牌
+            .tokenStore(jwtTokenStore())
+            .tokenEnhancer(jwtAccessTokenConverter());
+
+        super.configure(endpoints);
     }
+
+    public  TokenStore jwtTokenStore(){
+        return new JwtTokenStore(jwtAccessTokenConverter());
+    }
+
+    public JwtAccessTokenConverter jwtAccessTokenConverter(){
+        JwtAccessTokenConverter tokenConverter = new JwtAccessTokenConverter() ;
+        // 读取classpath 下面的密钥文件
+        ClassPathResource classPathResource = new ClassPathResource("coinexchange.jks");
+        // 获取KeyStoreFactory
+        KeyStoreKeyFactory keyStoreKeyFactory = new KeyStoreKeyFactory(classPathResource,"coinexchange".toCharArray()) ;
+        // 给JwtAccessTokenConverter 设置一个密钥对
+        tokenConverter.setKeyPair(keyStoreKeyFactory.getKeyPair("coinexchange","coinexchange".toCharArray()));
+        return  tokenConverter ;
+    }
+
+
+//    public TokenStore redisTokenStore() {
+//        return new RedisTokenStore(redisConnectionFactory);
+//    }
 }
