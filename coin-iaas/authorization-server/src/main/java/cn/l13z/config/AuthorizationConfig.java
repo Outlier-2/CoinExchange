@@ -1,6 +1,7 @@
 package cn.l13z.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,8 +38,9 @@ public class AuthorizationConfig extends AuthorizationServerConfigurerAdapter {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    // 依赖注入用户详情服务
+//    // 依赖注入用户详情服务
     @Autowired
+//    @Qualifier("userServiceDetailsServiceImpl")
     private UserDetailsService userDetailsService;
 
 //    @Autowired
@@ -65,7 +67,12 @@ public class AuthorizationConfig extends AuthorizationServerConfigurerAdapter {
             // 访问令牌的有效期，单位为秒
             .accessTokenValiditySeconds(24 * 7200)
             // 刷新令牌的有效期，单位为秒
-            .refreshTokenValiditySeconds(7 * 24 * 7200);
+            .refreshTokenValiditySeconds(7 * 24 * 7200)
+            .secret(passwordEncoder.encode("inside-secret"))
+            .authorizedGrantTypes("client_credentials")
+            .scopes("all")
+            .accessTokenValiditySeconds(7 * 24 * 7200);
+        ;
     }
 
     /**

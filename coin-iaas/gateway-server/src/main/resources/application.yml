@@ -52,6 +52,11 @@ spring:
                     dataId: api-group
                     ruleType: gw_api_group
     redis:
+        jedis:
+            pool:
+                max-idle: 8
+                min-idle: 0
+                max-active: 8
         host: 106.52.67.250
         port: 6380
         password: 123456*
