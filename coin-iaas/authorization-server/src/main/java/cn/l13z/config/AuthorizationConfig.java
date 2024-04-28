@@ -40,7 +40,7 @@ public class AuthorizationConfig extends AuthorizationServerConfigurerAdapter {
 
 //    // 依赖注入用户详情服务
     @Autowired
-//    @Qualifier("userServiceDetailsServiceImpl")
+    @Qualifier("userServiceDetailsServiceImpl")
     private UserDetailsService userDetailsService;
 
 //    @Autowired
@@ -68,8 +68,8 @@ public class AuthorizationConfig extends AuthorizationServerConfigurerAdapter {
             .accessTokenValiditySeconds(24 * 7200)
             // 刷新令牌的有效期，单位为秒
             .refreshTokenValiditySeconds(7 * 24 * 7200)
-            .secret(passwordEncoder.encode("inside-secret"))
-            .authorizedGrantTypes("client_credentials")
+//            .secret(passwordEncoder.encode("inside-secret"))
+//            .authorizedGrantTypes("client_credentials")
             .scopes("all")
             .accessTokenValiditySeconds(7 * 24 * 7200);
         ;
@@ -107,9 +107,4 @@ public class AuthorizationConfig extends AuthorizationServerConfigurerAdapter {
         tokenConverter.setKeyPair(keyStoreKeyFactory.getKeyPair("coinexchange","coinexchange".toCharArray()));
         return  tokenConverter ;
     }
-
-
-//    public TokenStore redisTokenStore() {
-//        return new RedisTokenStore(redisConnectionFactory);
-//    }
 }

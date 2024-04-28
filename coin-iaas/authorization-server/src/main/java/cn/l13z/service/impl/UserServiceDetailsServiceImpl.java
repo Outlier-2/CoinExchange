@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,7 +33,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * <p>
  * Modification History: <br> - 2024/4/25 AlfredOrlando 用户服务实现类 <br>
  */
-
+@Slf4j
 @Service
 public class UserServiceDetailsServiceImpl implements UserDetailsService {
 
@@ -42,13 +43,15 @@ public class UserServiceDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-        String loginType = requestAttributes.getRequest().getParameter("login_type"); // 区分时后台人员还是我们的用户登录
+        // 区分时后台人员还是我们的用户登录
+        String loginType = requestAttributes.getRequest().getParameter("login_type");
         if (StringUtils.isEmpty(loginType)) {
             throw new AuthenticationServiceException("登录类型不能为null");
         }
         UserDetails userDetails = null;
         try {
-            String grantType = requestAttributes.getRequest().getParameter("grant_type"); // refresh_token 进行纠正
+            // refresh_token 进行纠正
+            String grantType = requestAttributes.getRequest().getParameter("grant_type");
             if (LoginConstant.REFRESH_TYPE.equalsIgnoreCase(grantType)) {
                 username = adjustUsername(username, loginType);
             }
@@ -64,6 +67,7 @@ public class UserServiceDetailsServiceImpl implements UserDetailsService {
                     throw new AuthenticationServiceException("暂不支持的登录方式:" + loginType);
             }
         } catch (IncorrectResultSizeDataAccessException e) { // 我们的用户不存在
+
             throw new UsernameNotFoundException("用户名" + username + "不存在");
         }
 
@@ -96,26 +100,26 @@ public class UserServiceDetailsServiceImpl implements UserDetailsService {
      * @return
      */
     private UserDetails loadSysUserByUsername(String username) {
-        // 1 使用用户名查询用户
-        return jdbcTemplate.queryForObject(LoginConstant.QUERY_ADMIN_SQL, new RowMapper<User>() {
-            @Override
-            public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-                if (rs.wasNull()) {
-                    throw new UsernameNotFoundException("用户名" + username + "不存在");
-                }
-                long id = rs.getLong("id"); // 用户的id
-                String password = rs.getString("password"); // 用户的密码
-                int status = rs.getInt("status");
-                return new User(   // 3 封装成一个UserDetails对象，返回
-                    String.valueOf(id), //使用id->username
-                    password,
-                    status == 1,
-                    true,
-                    true,
-                    true,
-                    getSysUserPermissions(id)
-                );
+        return jdbcTemplate.queryForObject(LoginConstant.QUERY_ADMIN_SQL, (rs, rowNum) -> {
+            if (rs.wasNull()) {
+                throw new UsernameNotFoundException("用户名" + username + "不存在");
             }
+            long id = rs.getLong("id"); // 用户的id
+            String password = rs.getString("password"); // 用户的密码
+            int status = rs.getInt("status");
+
+            log.error("下面是从数据库中查询到的用户信息：" + id + "," + password + "," + status);
+            User user = new User(     // 3 封装成一个UserDetails对象，返回
+                String.valueOf(1), //使用id->username
+                password,
+                status == 1,
+                true,
+                true,
+                true,
+                getSysUserPermissions(id));
+
+
+            return user;
         }, username);
     }
 
@@ -128,12 +132,16 @@ public class UserServiceDetailsServiceImpl implements UserDetailsService {
     private Collection<? extends GrantedAuthority> getSysUserPermissions(long id) {
         // 1 当用户为超级管理员时，他拥有所有的权限数据
         String roleCode = jdbcTemplate.queryForObject(LoginConstant.QUERY_ROLE_CODE_SQL, String.class, id);
-        List<String> permissions = null; // 权限的名称
-        if (LoginConstant.ADMIN_ROLE_CODE.equals(roleCode)) { // 超级用户
+        // 权限的名称
+        List<String> permissions = null;
+        // 超级用户
+        if (LoginConstant.ADMIN_ROLE_CODE.equals(roleCode)) {
             permissions = jdbcTemplate.queryForList(LoginConstant.QUERY_ALL_PERMISSIONS, String.class);
         } else { // 2 普通用户，需要使用角色->权限数据
             permissions = jdbcTemplate.queryForList(LoginConstant.QUERY_PERMISSION_SQL, String.class, id);
         }
+
+        log.error("下面是从数据库中查询到的用户权限：" + permissions);
         if (permissions == null || permissions.isEmpty()) {
             return Collections.emptySet();
         }
