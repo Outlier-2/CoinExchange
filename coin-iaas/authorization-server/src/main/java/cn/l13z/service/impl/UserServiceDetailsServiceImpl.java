@@ -108,7 +108,7 @@ public class UserServiceDetailsServiceImpl implements UserDetailsService {
             String password = rs.getString("password"); // 用户的密码
             int status = rs.getInt("status");
 
-            log.error("下面是从数据库中查询到的用户信息：" + id + "," + password + "," + status);
+//            log.error("下面是从数据库中查询到的用户信息：" + id + "," + password + "," + status);
             User user = new User(     // 3 封装成一个UserDetails对象，返回
                 String.valueOf(1), //使用id->username
                 password,
@@ -141,7 +141,7 @@ public class UserServiceDetailsServiceImpl implements UserDetailsService {
             permissions = jdbcTemplate.queryForList(LoginConstant.QUERY_PERMISSION_SQL, String.class, id);
         }
 
-        log.error("下面是从数据库中查询到的用户权限：" + permissions);
+//        log.error("下面是从数据库中查询到的用户权限：" + permissions);
         if (permissions == null || permissions.isEmpty()) {
             return Collections.emptySet();
         }
