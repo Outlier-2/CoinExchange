@@ -19,6 +19,7 @@
     <module>coin-statistics</module>
     <module>match-engine</module>
     <module>exchange-engine</module>
+    <module>coin-admin/admin-service</module>
   </modules>
 
 

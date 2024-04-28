@@ -1,0 +1,16 @@
+spring:
+    application: # 应用名称
+        name: admin-service
+    profiles:
+        active: admin-service-dev.yaml # 应用环境
+    cloud:
+        nacos: #配置Nacos的地址
+            server-addr: 127.0.0.1:8848
+            config: # 配置文件的扩展名
+                extension-configs:
+                    -   data-id: admin-service-dev.yaml
+
+
+
+
+

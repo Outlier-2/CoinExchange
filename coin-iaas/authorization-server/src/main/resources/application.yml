@@ -3,16 +3,25 @@ server:
 spring:
     application:
         name: authorization-server
-    cloud:
-        nacos:
-            discovery:
-                server-addr: 127.0.0.1:8848
+#    cloud:
+#        nacos:
+#            discovery:
+#                server-addr: 127.0.0.1:8848
     datasource:
         url: jdbc:mysql://127.0.0.1:3307/coin_exchange?useUnicode=true&characterEncoding=UTF-8&useSSL=false
         username: root
         password: 123456*
         driver-class-name: com.mysql.cj.jdbc.Driver
-#    redis:
-#        host: 106.52.67.250
-#        port: 6380
-#        password: 123456*
+    redis:
+        host: 106.52.67.250
+        port: 6380
+        password: 123456*
+management:
+    endpoints:
+        web:
+            exposure:
+                include: "*"
+    endpoint:
+        health:
+            show-details: always
+
